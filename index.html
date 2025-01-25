@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Elfsight Widget Loader</title>
+        <style>
+            body {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                background-color: white;
+                color: white;
+                font-family: "Adamina", serif;
+            }
+
+            .main {
+                background-color: #00000040;
+                pointer-events: none;
+                visibility: hidden;
+                opacity: 0;
+                transition: all ease 0.3s;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 100%;
+                height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .main.active {
+                visibility: visible;
+                opacity: 1;
+                pointer-events: all;
+            }
+
+            .popup {
+                display: flex;
+                animation: ease 1s backwards;
+                max-width: 1200px;
+                background-color: rgb(17, 17, 17);
+                border-radius: 20px;
+                padding: 60px;
+                gap: 80px;
+                position: relative;
+                width: 100%;
+                z-index: 9999;
+
+            }
+
+            .popup .background {
+                position: absolute;
+                width: 100%;
+            }
+
+            .popup #closePopup {
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                width: 35px;
+                border-radius: 100%;
+                display: flex;
+                padding: 7.5px;
+                height: 35px;
+                cursor: pointer;
+                color: white;
+            }
+
+            .popup #closePopup svg {
+                width: 15px;
+                cursor: pointer;
+            }
+
+            .popup .spin-wheel {
+                position: relative;
+                width: calc(60% - 40px);
+                /* Ensure the spin-wheel takes the full width */
+            }
+
+            .popup .spin-wheel #wheelCanvas {
+                width: 100%;
+                height: 100%;
+                display: block;
+            }
+
+            .popup .spin-wheel span {
+                position: absolute;
+                top: 50%;
+                right: -30px;
+                width: 2em;
+                transform: translateY(-50%) rotate(90deg);
+                color: white;
+                font-weight: 600;
+            }
+
+            .spin-button {
+                border-radius: 4px;
+                border-color: rgba(0, 0, 0, 0);
+                line-height: 1.3;
+                color: rgb(255, 255, 255);
+                font-family: inherit;
+                font-weight: bold;
+                font-size: 18px;
+                font-style: normal;
+                background-color: rgb(103, 44, 184);
+                border-width: 2px;
+                min-width: 100%;
+                padding: 10px 20px;
+                margin: 24px 0;
+            }
+
+            .popup .spin-wheel .pointer {
+                position: absolute;
+                top: 50%;
+                right: 0;
+                width: 50px;
+                height: auto;
+                transform: translateY(-50%);
+            }
+
+            .popup .spin-wheel .center-circle {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 60px;
+                /* Make the center circle smaller */
+                height: 60px;
+                /* Make the center circle smaller */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                transform: translate(-50%, -50%);
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+                background-color: white;
+                padding: 5px;
+            }
+
+            .popup .spin-wheel .center-circle img {
+                width: 30px;
+                /* Make the image inside the center circle smaller */
+                height: 30px;
+                /* Make the image inside the center circle smaller */
+            }
+
+            .popup .text-section {
+                width: calc(40% - 40px);
+                display: flex;
+                flex-direction: column;
+                justify-content: space-around;
+            }
+
+            .popup .text-section .text h1 {
+                line-height: 1.32;
+                font-size: 28px;
+                font-weight: bold;
+                color: rgb(238, 236, 236);
+                font-family: "Adamina", serif;
+                margin-bottom: 10px;
+            }
+
+            .popup .text-section .text p {
+                line-height: 1.32;
+                color: rgb(238, 236, 236);
+            }
+
+            .popup .text-section .contact-info {
+                color: rgb(238, 236, 236);
+            }
+
+            .popup .text-section .contact-info p {
+                opacity: 0.5;
+                font-size: 13px;
+            }
+
+            .popup .text-section .contact-info a {
+                opacity: 0.5;
+                font-size: 13px;
+                color: rgb(238, 236, 236);
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+
+                to {
+                    opacity: 1;
+                }
+            }
+
+            @keyframes fadeOut {
+                from {
+                    opacity: 1;
+                }
+
+                to {
+                    opacity: 0;
+                }
+            }
+
+            .fade-in {
+                animation: fadeIn 1s forwards;
+            }
+
+            .fade-out {
+                animation: fadeOut 1s forwards;
+            }
+
+            @media (max-width: 996px) {
+                .popup {
+                    flex-direction: column;
+                    padding: 25px;
+                    max-width: 80%;
+                    overflow: scroll;
+                    min-height: 700px;
+                    max-height: 700px;
+                    gap: 40px;
+
+                }
+
+                .popup .spin-wheel {
+                    width: 100%;
+                }
+
+                .popup .text-section {
+                    width: 100%;
+                }
+
+                .popup .text-section .text h1 {
+                    font-size: 18px;
+                }
+
+                .popup .text-section .text p {
+                    font-size: 12px;
+                }
+
+                .spin-button {
+                    padding: 5px 10px;
+                    font-size: 12px;
+                }
+
+                .popup .text-section .contact-info p,
+                .popup .text-section .contact-info a {
+                    font-size: 12px;
+                }
+
+                .popup .spin-wheel .pointer {
+                    width: 30px;
+                    /* Make the pointer smaller on mobile */
+                    right: -5px;
+                }
+
+                .popup .spin-wheel .center-circle {
+                    width: 50px;
+                    /* Make the center circle smaller on mobile */
+                    height: 50px;
+                    /* Make the center circle smaller on mobile */
+                }
+
+                .popup .spin-wheel .center-circle img {
+                    width: 25px;
+                    /* Make the image inside the center circle smaller on mobile */
+                    height: 25px;
+                    /* Make the image inside the center circle smaller on mobile */
+                }
+
+            }
+
+            #openPopup {
+                padding: 15px 70px;
+                font-size: 18px;
+                background-color: #cc99ff;
+                color: #fff;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+
+            #openPopup:hover {
+                background-color: #b469ff;
+            }
+        </style>
+    </head>
+
+<body>
+    <button id="loadWidgetBtn">
+        <div>
+            <div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                        d="m3.426 2.024.094.083L8 6.586l4.48-4.479a1 1 0 0 1 1.497 1.32l-.083.095L9.414 8l4.48 4.478a1 1 0 0 1-1.32 1.498l-.094-.083L8 9.413l-4.48 4.48a1 1 0 0 1-1.497-1.32l.083-.095L6.585 8 2.106 3.522a1 1 0 0 1 1.32-1.498Z">
+                    </path>
+                </svg></div>
+        </div>
+    </button>
+    <button id="openPopup">👉 JETZT AM RAD DREHEN</br> ..und gewinnen</button>
+    <div class="main" id="main">
+        <div class="popup" id="popup">
+            <button id="closePopup">
+                <div>
+                    <div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="m3.426 2.024.094.083L8 6.586l4.48-4.479a1 1 0 0 1 1.497 1.32l-.083.095L9.414 8l4.48 4.478a1 1 0 0 1-1.32 1.498l-.094-.083L8 9.413l-4.48 4.48a1 1 0 0 1-1.497-1.32l.083-.095L6.585 8 2.106 3.522a1 1 0 0 1 1.32-1.498Z">
+                            </path>
+                        </svg></div>
+                </div>
+            </button>
+            <div class="spin-wheel">
+                <canvas id="wheelCanvas"></canvas> <!-- Remove fixed width and height for the canvas -->
+                <img src="pointer.svg" alt="Pointer" class="pointer">
+                <div class="center-circle">
+                    <img src="./cap-image.png" alt="">
+                </div>
+            </div>
+            <div class="text-section">
+                <div class="text">
+                    <h1 id="message">Jetzt bis zu 200€ Tattoo Rabatt erhalten🤩</h1>
+                    <p id="description"><strong>Einmalige Chance!</strong> Dreh jetzt das Glücksrad und erhalte satte
+                        Rabatte auf dein nächstes Tattoo bei Inkeria Tattoo in Idar Oberstein📍</p>
+                </div>
+                <button id="spinButton" class="spin-button">Jetzt drehen</button>
+                <div class="contact-info">
+                    <p>Inkeria Tattoo</p>
+                    <br>
+                    <p>Adresse: Hauptstraße 478,<br>55743 Idar-Oberstein</p>
+                    <br>
+                    <p>Telefon: <a href="tel:+4915901243487">0159 01243487</a></p>
+                    <p>E-Mail: <a href="mailto:inkeria.tattoo@icloud.com">inkeria.tattoo@icloud.com</a></p>
+                    <br>
+                    <p><a href="#">Impressum</a> | <a href="#">Datenschutz</a></p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Your custom JavaScript -->
+    <script>
+        const main = document.getElementById("main");
+        const closePopup = document.getElementById("closePopup");
+        const openPopup = document.getElementById("openPopup");
+        const button = document.getElementById("spinButton");
+        button.disabled = true;
+        setTimeout(() => {
+            button.disabled = false;
+        }, 1000);
+
+        closePopup.addEventListener("click", () => {
+            main.classList.remove("active");
+            console.log("close");
+        });
+        openPopup.addEventListener("click", () => {
+            main.classList.add("active");
+        });
+
+        const colors = ["#672cb8", "#956bcd"]; // Cycle between the first and second colors
+        const values = [
+            { label: "100 EUR Rabatt", value: "100" },
+            { label: "0 EUR", value: "€0" },
+            { label: "200 EUR Rabatt", value: "200" },
+            { label: "75 EUR Rabatt", value: "75" },
+            { label: "10 EUR Rabatt", value: "10" },
+            { label: "20 EUR Rabatt", value: "20" },
+            { label: "0 EUR", value: "0" },
+            { label: "50 EUR Rabatt", value: "50" },
+            { label: "30 EUR Rabatt", value: "30" },
+            { label: "150 EUR Rabatt", value: "150" }
+        ];
+
+        let startAngle = 0;
+        const arc = Math.PI * 2 / values.length; // Calculate arc based on the number of values
+        let spinTimeout = null;
+        let spinArcStart = 10;
+        let spinTime = 0;
+        let spinTimeTotal = 0;
+
+        let ctx;
+        const img = new Image();
+        img.src = 'pointer.svg';
+
+        let isSpinning = false;
+
+        let spinResult = localStorage.getItem('spinResult');
+        let hasSpun = localStorage.getItem('hasSpun') === 'true';
+
+        const drawSpinWheel = () => {
+            const button = document.getElementById("spinButton");
+            const canvas = document.getElementById("wheelCanvas");
+
+            canvas.width = 600; // Set canvas width dynamically
+            canvas.height = 600; // Set canvas height dynamically
+
+            if (canvas.getContext) {
+                const canvasSize = Math.min(canvas.width, canvas.height);
+                const outsideRadius = canvasSize / 2 - 20; // Reduce outer circle radius to add a smaller gap
+                const textRadius = outsideRadius - 100; // Adjust text radius for responsiveness
+                const insideRadius = 0;
+
+                ctx = canvas.getContext("2d");
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                ctx.strokeStyle = "black";
+                ctx.lineWidth = 2;
+
+                ctx.font = `${canvasSize / 30}px Adamina, serif`; // Adjust font size based on canvas size
+
+                ctx.save();
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.rotate(Math.PI / 2);
+                ctx.translate(-canvas.width / 2, -canvas.height / 2);
+
+                for (let i = 0; i < values.length; i++) {
+                    const angle = startAngle + i * arc;
+                    ctx.fillStyle = colors[i % colors.length]; // Cycle through colors
+
+                    ctx.beginPath();
+                    ctx.arc(canvas.width / 2, canvas.height / 2, outsideRadius, angle, angle + arc, false);
+                    ctx.arc(canvas.width / 2, canvas.height / 2, insideRadius, angle + arc, angle, true);
+                    ctx.fill();
+
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 0;
+                    ctx.fillStyle = "white";
+                    ctx.textBaseline = 'middle';
+                    ctx.textAlign = 'center';
+                    ctx.translate(canvas.width / 2 + Math.cos(angle + arc / 2) * textRadius,
+                        canvas.height / 2 + Math.sin(angle + arc / 2) * textRadius);
+                    ctx.rotate(angle + arc / 2); // Rotate the text to align with the arcs
+                    const text = values[i].label;
+                    ctx.fillText(text, 0, 0);
+                    ctx.restore();
+                }
+
+                ctx.restore();
+
+                // Add border around the wheel
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, outsideRadius, 0, Math.PI * 2, false);
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = 'white';
+                ctx.stroke();
+            }
+        };
+
+        window.addEventListener('resize', drawSpinWheel); // Redraw the wheel on window resize
+
+        const spin = () => {
+            if (isSpinning) return;
+            isSpinning = true;
+            document.getElementById("spinButton").removeEventListener("click", spin); // Remove event listener to disable the button
+            spinAngleStart = Math.random() * 10 + 10;
+            spinTime = 0;
+            spinTimeTotal = Math.random() * 3 + 6 * 1000;
+            rotateWheel();
+        };
+
+        const rotateWheel = () => {
+            spinTime += 15;
+
+            if (spinTime >= spinTimeTotal) {
+                stopRotateWheel();
+                return;
+            }
+            const spinAngle = spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
+            startAngle += (spinAngle * Math.PI / 180);
+            drawSpinWheel();
+            spinTimeout = setTimeout(rotateWheel, 15);
+        };
+
+        const stopRotateWheel = () => {
+            clearTimeout(spinTimeout);
+            const degrees = startAngle * 180 / Math.PI + 90;
+            const arcd = arc * 180 / Math.PI;
+            const index = Math.floor((360 - degrees % 360) / arcd);
+            const text = values[index].value;
+            const messageElement = document.getElementById("message");
+            const descriptionElement = document.getElementById("description");
+
+            // Apply fade-out animation
+            messageElement.classList.remove("fade-in");
+            messageElement.classList.add("fade-out");
+            descriptionElement.classList.remove("fade-in");
+            descriptionElement.classList.add("fade-out");
+            button.classList.remove("fade-in");
+            button.classList.add("fade-out");
+
+            // Change the text after the fade-out animation completes
+            setTimeout(() => {
+                localStorage.setItem('hasSpun', true);
+                if (!localStorage.getItem('spinResult')) {
+                    localStorage.setItem('spinResult', text);
+                }
+                messageElement.innerHTML = `<p>Herzlichen Glückwunsch, Du hast einen ${text}€ Tattoo-Rabatt gewonnen 🎉</p>`;
+                descriptionElement.innerHTML = "Klicke jetzt den Button um den Rabatt zu erhalten";
+                button.innerHTML = "Rabatt anfordern!";
+                button.setAttribute('href', '/?coupon=' + text); // Set the href attribute
+
+                messageElement.classList.remove("fade-out");
+                messageElement.classList.add("fade-in");
+
+                descriptionElement.classList.remove("fade-out");
+                descriptionElement.classList.add("fade-in");
+
+                button.classList.remove("fade-out");
+                button.classList.add("fade-in");
+
+                // Add a new event listener to redirect to the link
+                button.addEventListener("click", () => {
+                    window.location.href = button.getAttribute('href');
+                });
+
+            }, 1000); // Match the duration of the fade-out animation
+
+            isSpinning = false;
+        };
+
+        if (hasSpun) {
+            spinResult = localStorage.getItem('spinResult');
+            const messageElement = document.getElementById("message");
+            const descriptionElement = document.getElementById("description");
+            const button = document.getElementById("spinButton");
+
+            messageElement.innerHTML = `<p>Herzlichen Glückwunsch, Du hast einen ${spinResult}€ Tattoo-Rabatt gewonnen 🎉</p>`;
+            descriptionElement.innerHTML = "Klicke jetzt den Button um den Rabatt zu erhalten";
+            button.innerHTML = "Rabatt anfordern!";
+            button.setAttribute('href', '/?coupon=' + spinResult); // Set the href attribute
+
+            // Add a new event listener to redirect to the link
+            button.addEventListener("click", () => {
+                window.location.href = button.getAttribute('href');
+            });
+        }
+
+        const easeOut = (t, b, c, d) => {
+            const ts = (t /= d) * t;
+            const tc = ts * t;
+            return b + c * (tc + -3 * ts + 3 * t);
+        };
+
+        document.getElementById("spinButton").addEventListener("click", spin); // Change event listener to the spin button
+
+        img.onload = drawSpinWheel;
+
+    </script>
+</body>
+
+</html>
